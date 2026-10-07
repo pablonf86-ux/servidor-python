@@ -45,7 +45,7 @@ def init_db():
 
 init_db()
 
-# --- 2. PLANTILLA HTML DASHBOARD COMPLETO ---
+# --- 2. PLANTILLA HTML ---
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -55,7 +55,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
             margin: 0;
@@ -77,8 +77,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             font-size: 13px;
             margin-bottom: 25px;
         }
-        
-        /* Tarjetas de Indicadores (KPIs) */
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -104,9 +102,37 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             font-weight: bold;
             color: #f8fafc;
         }
-
-        /* Gráficas */
         .grid-charts {
             display: grid;
             grid-template-columns: 1fr;
-            gap:
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        @media(min-width: 768px) {
+            .grid-charts {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .card {
+            background-color: #1e293b;
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        h2 {
+            color: #f1f5f9;
+            font-size: 15px;
+            margin-top: 0;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            background-color: #0f172a;
