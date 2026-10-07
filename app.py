@@ -4,12 +4,11 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# --- 1. CREACIÓN Y POBLADO DE LA BASE DE DATOS (SQLITE) ---
+# --- 1. BASE DE DATOS SQLITE ---
 def init_db():
     conn = sqlite3.connect('videojuegos.db')
     cursor = conn.cursor()
     
-    # Crear tabla de la Base de Datos
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS videojuegos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,7 +20,6 @@ def init_db():
         )
     ''')
     
-    # Insertar datos de prueba relacionales si está vacía
     cursor.execute('SELECT COUNT(*) FROM videojuegos')
     if cursor.fetchone()[0] == 0:
         juegos = [
@@ -43,60 +41,41 @@ def init_db():
 
 init_db()
 
-# --- 2. PLANTILLA HTML CON GRÁFICA DE BARRAS Y TABLAS DE BD ---
-HTML_TEMPLATE = """
-<!DOCTYPE html>
+# --- 2. PLANTILLA HTML ---
+HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base de Datos & Analítica de Videojuegos</title>
+    <title>Analítica de Videojuegos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
             margin: 0;
             padding: 15px;
         }
         .container {
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
         }
         h1 {
             text-align: center;
             color: #38bdf8;
-            margin-bottom: 5px;
             font-size: 22px;
-        }
-        p.subtitle {
-            text-align: center;
-            color: #94a3b8;
-            margin-bottom: 20px;
-            font-size: 13px;
         }
         .card {
             background-color: #1e293b;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-        }
-        h2 {
-            color: #f1f5f9;
-            font-size: 16px;
-            margin-top: 0;
-            border-bottom: 2px solid #334155;
-            padding-bottom: 8px;
         }
         .chart-container {
             position: relative;
-            height: 320px;
+            height: 300px;
             width: 100%;
-        }
-        .table-responsive {
-            overflow-x: auto;
         }
         table {
             width: 100%;
@@ -105,7 +84,7 @@ HTML_TEMPLATE = """
             font-size: 13px;
         }
         th, td {
-            padding: 10px;
+            padding: 8px;
             text-align: left;
             border-bottom: 1px solid #334155;
         }
@@ -113,35 +92,22 @@ HTML_TEMPLATE = """
             background-color: #334155;
             color: #38bdf8;
         }
-        tr:hover {
-            background-color: #334155;
-        }
-        .badge {
-            background-color: #0284c7;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            white-space: nowrap;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📊 Analítica de Datos & Base de Datos</h1>
-        <p class="subtitle">Conexión SQLite + Pandas DataFrame + Gráfica de Barras</p>
+        <h1>📊 Analítica & Base de Datos de Videojuegos</h1>
 
-        <!-- Gráfica de Barras -->
         <div class="card">
-            <h2>📈 Gráfica de Barras: Ventas Totales por Género (Millones)</h2>
+            <h2>Ventas Totales por Género (Gráfica de Barras)</h2>
             <div class="chart-container">
                 <canvas id="barChart"></canvas>
             </div>
         </div>
 
-        <!-- Tabla de la Base de Datos -->
         <div class="card">
-            <h2>🗄️ Tabla Relacional `videojuegos` (SQLite DB)</h2>
-            <div class="table-responsive">
+            <h2>Registros de la Base de Datos</h2>
+            <div style="overflow-x: auto;">
                 <table>
                     <thead>
                         <tr>
@@ -156,9 +122,9 @@ HTML_TEMPLATE = """
                     <tbody>
                         {% for juego in juegos %}
                         <tr>
-                            <td><code>#{{ juego.id }}</code></td>
+                            <td>#{{ juego.id }}</td>
                             <td><strong>{{ juego.titulo }}</strong></td>
-                            <td><span class="badge">{{ juego.plataforma }}</span></td>
+                            <td>{{ juego.plataforma }}</td>
                             <td>{{ juego.genero }}</td>
                             <td>{{ juego.anio_lanzamiento }}</td>
                             <td><strong>{{ juego.ventas_millones }} M</strong></td>
@@ -168,3 +134,60 @@ HTML_TEMPLATE = """
                 </table>
             </div>
         </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('barChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ generos | tojson }},
+                datasets: [{
+                    label: 'Ventas en Millones',
+                    data: {{ ventas | tojson }},
+                    backgroundColor: '#38bdf8',
+                    borderColor: '#0284c7',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#f8fafc' },
+                        grid: { color: '#334155' }
+                    },
+                    x: {
+                        ticks: { color: '#f8fafc' },
+                        grid: { color: '#334155' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: '#f8fafc' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>"""
+
+# --- 3. RUTAS FLASK ---
+@app.route("/")
+def dashboard():
+    conn = sqlite3.connect('videojuegos.db')
+    df_juegos = pd.read_sql_query("SELECT * FROM videojuegos ORDER BY ventas_millones DESC", conn)
+    juegos = df_juegos.to_dict(orient='records')
+    
+    df_grafica = pd.read_sql_query("SELECT genero, SUM(ventas_millones) as total_ventas FROM videojuegos GROUP BY genero ORDER BY total_ventas DESC", conn)
+    generos = df_grafica['genero'].tolist()
+    ventas = df_grafica['total_ventas'].tolist()
+    conn.close()
+    
+    return render_template_string(HTML_TEMPLATE, juegos=juegos, generos=generos, ventas=ventas)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
